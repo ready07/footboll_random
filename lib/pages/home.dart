@@ -1,28 +1,30 @@
-import 'dart:ui';
+import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
-import 'package:flutter/widgets.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive/hive.dart';
 import 'package:football_app/pages/teams_page.dart';
 import 'package:football_app/process/dialog_box.dart';
 import 'package:football_app/process/dialog_teams.dart';
 import 'package:football_app/process/hive_playersdata.dart';
 import 'package:football_app/process/tasks_cleancode.dart';
-import 'dart:async';
-import 'dart:math';
+part 'home.g.dart';
 
+@HiveType(typeId: 0)
 class Player {
+  @HiveField(0)
   String name;
+  @HiveField(1)
   int level;
+  @HiveField(2)
   String position;
+  @HiveField(3)
   int randomInt;
 
   Player(this.name, this.level, this.position, this.randomInt);
-
-  void add(int randomNum) {}
 }
 
 class Allplayers extends StatefulWidget {
@@ -71,12 +73,13 @@ class _AllplayersState extends State<Allplayers> {
                 levelInt = 1;
               }
               setState(() {
+                Player p = Player(_controller.text, levelInt, position1, 0);
                 // List<dynamic> playerAdd = [_controller.text, level2, position1];
                 db.listOfReady
                     .add(Player(_controller.text, levelInt, position1, 0));
+                db.updateData2();
               });
               _controller.clear();
-              db.updateData2();
             },
           );
         });
@@ -106,7 +109,8 @@ class _AllplayersState extends State<Allplayers> {
   void moveData1(int index) {
     setState(() {
       db.listOfReady.add(
-        db.listOfAbsent[index],);
+        db.listOfAbsent[index],
+      );
       db.listOfAbsent.removeAt(index);
     });
     db.updateData2();
@@ -117,7 +121,8 @@ class _AllplayersState extends State<Allplayers> {
   void moveData2(int index) {
     setState(() {
       db.listOfAbsent.add(
-        db.listOfReady[index],);
+        db.listOfReady[index],
+      );
       db.listOfReady.removeAt(index);
     });
     db.updateData();
@@ -128,19 +133,19 @@ class _AllplayersState extends State<Allplayers> {
   List distributePlayers(List<Player> players, int numberOfTeams) {
     List teams = List.generate(numberOfTeams, (_) => []);
 
-    //for adding RANDOM NUM TO THE LIST
+//    for adding RANDOM NUM TO THE LIST
     int randomNum = 0;
     for (Player player in players) {
       randomNum = Random().nextInt(1000);
       player.randomInt = randomNum;
     }
-
+    int range = players.length;
     //SORT THE LIST
-    for (int i = 0; i <= players.length;) {
+    for (int i = 0; i < range; i++) {
       int j = i + 1;
       for (j; j <= players.length;) {
-        dynamic playerJ = players[j].randomInt;
-        dynamic playerI = players[i].randomInt;
+        int playerJ = players[j].randomInt;
+        int playerI = players[i].randomInt;
         if (playerI > playerJ) {
           Player previousPlayer = players[i];
           players[i] = players[j];
@@ -149,7 +154,7 @@ class _AllplayersState extends State<Allplayers> {
       }
     }
 
-    for (int y = 0; y <= players.length;) {
+    for (int y = 0; y < players.length; y++) {
       int x = y + 1;
       for (x; x <= players.length;) {
         if (players[y].level > players[x].level) {
@@ -453,13 +458,15 @@ class _AllplayersState extends State<Allplayers> {
               // ignore: body_might_complete_normally_nullable
               itemBuilder: (context, index) {
                 String levelString = '';
-                if (db.listOfReady[index].level == 3) {
+                if (db.listOfReady.isNotEmpty) {
+                  if (db.listOfReady[index].level == 3) {
                     levelString = 'Skilled';
                   } else if (db.listOfReady[index].level == 2) {
                     levelString = 'Mid';
-                  } else {
+                  } else if (db.listOfReady[index].level == 1) {
                     levelString = 'Beginner';
                   }
+                }
                 if (db.listOfReady.isNotEmpty) {
                   return Newplayer(
                     playername: db.listOfReady[index].name,
@@ -479,15 +486,16 @@ class _AllplayersState extends State<Allplayers> {
               // ignore: body_might_complete_normally_nullable
               itemBuilder: (context, index) {
                 String levelskilled = 'Skilled';
-                if (db.listOfReady[index].level == 3) {
+                if (db.listOfAbsent.isNotEmpty) {
+                  if (db.listOfAbsent[index].level == 3) {
                     levelskilled = 'Skilled';
-                  } else if (db.listOfReady[index].level == 2) {
+                  } else if (db.listOfAbsent[index].level == 2) {
                     levelskilled = 'Mid';
-                  } else {
+                  } else if (db.listOfAbsent[index].level == 1) {
                     levelskilled = 'Beginner';
                   }
+                }
                 if (db.listOfAbsent.isNotEmpty) {
-                  
                   return Newplayer(
                     playername: db.listOfAbsent[index].name,
                     playerlevel: levelskilled,
