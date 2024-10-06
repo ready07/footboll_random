@@ -6,6 +6,7 @@ class TeamNum extends StatefulWidget {
   const TeamNum({required this.onTeamsSelected, super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _TeamNumState createState() => _TeamNumState();
 }
 

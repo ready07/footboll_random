@@ -4,10 +4,9 @@ class DialogAsk2 extends StatelessWidget {
   final VoidCallback removePlayer;
   final Function() moveData;
   final String titlePlayer;
-  final deleteOrChangeList;
-  // final Function() editPlayer;
+  bool deleteOrChangeList;
 
-  const DialogAsk2(
+  DialogAsk2(
       {super.key,
       required this.removePlayer,
       required this.moveData,
