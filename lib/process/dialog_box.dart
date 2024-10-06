@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 // import 'package:football_app/pages/home.dart';
 
 class Dialogask extends StatefulWidget {
-  final controller;
+  TextEditingController controller;
   final Function(String, String) onLevelSelected;
   String positionStr;
   String levelStr;
@@ -29,7 +29,6 @@ class _DialogaskState extends State<Dialogask> {
 
   @override
   void initState() {
-    
     super.initState();
     if (widget.edit == true) {
       value1 = widget.positionStr;
@@ -122,10 +121,9 @@ class _DialogaskState extends State<Dialogask> {
           style: ElevatedButton.styleFrom(
               backgroundColor: const Color.fromARGB(255, 49, 55, 87)),
           onPressed: () {
-            if (value1 != null && value2 != null && widget.controller != null) {
-              widget.onLevelSelected(
-                  value1!, value2!);
-               // Pass the selected value back
+            if (value1 != null && value2 != null && widget.controller.text.isNotEmpty) {
+              widget.onLevelSelected(value1!, value2!);
+              // Pass the selected value back
               Navigator.of(context).pop();
             }
           },
