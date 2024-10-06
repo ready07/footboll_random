@@ -19,7 +19,7 @@ class PlayerAdapter extends TypeAdapter<Player> {
     return Player(
       fields[0] as String,
       fields[1] as int,
-      fields[2] as String,
+      fields[2] as int,
       fields[3] as int,
     );
   }

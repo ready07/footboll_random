@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-// import 'package:football_app/process/dialog_teams.dart';
+import 'package:football_app/pages/home.dart';
 
 class TeamsPage extends StatelessWidget {
   final int numberOfTeams;
@@ -8,10 +8,8 @@ class TeamsPage extends StatelessWidget {
   const TeamsPage(
       {super.key, required this.numberOfTeams, required this.teams});
 
-  
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       appBar: AppBar(
           backgroundColor: const Color.fromARGB(255, 33, 40, 51),
@@ -53,9 +51,23 @@ class TeamsPage extends StatelessWidget {
                       const NeverScrollableScrollPhysics(), // Prevents inner scrolling
                   itemCount: teams[teamIndex].length,
                   itemBuilder: (context, playerIndex) {
-                    var player = teams[teamIndex][playerIndex];
-                    var level = player[1];
-                    var position = player[2];
+                    Player player = teams[teamIndex][playerIndex];
+                    String level = '';
+                    String positionStr = '';
+                    if (player.level == 3) {
+                      level = 'Skilled';
+                    } else if (player.level == 2) {
+                      level = 'Mid';
+                    } else {
+                      level = 'Beginner';
+                    }
+                    if (player.position == 3) {
+                      positionStr = 'Atacker';
+                    } else if (player.position == 2) {
+                      positionStr = 'Defender';
+                    } else {
+                      positionStr = 'Goalkeeper';
+                    }
 
                     return Padding(
                       padding: const EdgeInsets.fromLTRB(10, 3, 0, 1),
@@ -73,14 +85,14 @@ class TeamsPage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                player[0],
+                                player.name,
                                 style: const TextStyle(
                                     color: Colors.black,
                                     fontWeight: FontWeight.w500,
                                     fontSize: 16),
                               ),
                               Text(
-                                'Level:$level, Positon: $position',
+                                'Level:$level, Position: $positionStr',
                                 style: const TextStyle(
                                     color: Color.fromARGB(255, 55, 53, 53),
                                     fontSize: 14),
@@ -100,83 +112,3 @@ class TeamsPage extends StatelessWidget {
     );
   }
 }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Teams',style: TextStyle(color: Colors.white),),
-//          leading: IconButton(
-//           icon: const Icon(Icons.arrow_back, color: Color.fromARGB(255, 255, 255, 255)),
-//           onPressed: () => Navigator.of(context).pop(),
-//         ),
-
-//         backgroundColor: const Color.fromARGB(255, 37, 45, 58),
-//       ),
-//       body: ListView.builder(
-//         itemCount: numberOfTeams,
-//         itemBuilder: (context, index) {
-//           // Create a Card for each team
-//           return Card(
-//             margin: const EdgeInsets.all(10),
-//             elevation: 4, // Adds shadow for a material design feel
-//             child: ExpansionTile(
-//               title: Text('Team ${index + 1}',
-//                 style: const TextStyle(
-//                   fontWeight: FontWeight.bold,
-//                   fontSize: 18,
-//                 ),
-//               ),
-//               leading: const Icon(Icons.group), // An icon that represents teams
-//               children: _buildPlayerList(teams[index]), // List of players for this team
-//             ),
-//           );
-//         },
-//       ),
-//     );
-//   }
-
-//   // This method builds the list of players for a given team
-//   List<Widget> _buildPlayerList(List team) {
-//     return team.map((player) {
-//       return ListTile(
-//         title: Text(player[0]), // Player name
-//         subtitle: Text('${player[1]} - ${player[2]}'), // Player level and position
-//         leading: const Icon(Icons.person), // An icon to represent a player
-//       );
-//     }).toList();
-//   }
-// }
-
-// import 'package:flutter/material.dart';
-
-// class TeamsPage extends StatelessWidget {
-//   final int numberOfTeams;
-//   final List<List<List<String>>> teams; // Assuming player is a list of [name, level, position]
-
-//   TeamsPage({required this.numberOfTeams, required this.teams});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: Text("Generated Teams")),
-//       body: ListView.builder(
-//         itemCount: numberOfTeams,
-//         itemBuilder: (context, index) {
-//           return Card(
-//             margin: EdgeInsets.all(10),
-//             child: ExpansionTile(
-//               title: Text('Team ${index + 1}'),
-//               children: teams[index].map<Widget>((player) {
-//                 return ListTile(
-//                   title: Text(player[0]),
-//                   subtitle: Text('Level: ${player[1]}, Position: ${player[2]}'),
-//                 );
-//               }).toList(),
-//             ),
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }

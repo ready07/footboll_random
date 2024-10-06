@@ -1,6 +1,5 @@
 import 'package:football_app/pages/home.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-// import 'package:football_app/pages/home.dart';
 
 // ignore: camel_case_types
 class playersDataBase {

@@ -71,20 +71,6 @@ class _TeamNumState extends State<TeamNum> {
   }
 }
 
-
-// class TeamNum extends StatefulWidget {
-//   const TeamNum({super.key});
-
-//   @override
-//   State<TeamNum> createState() => _TeamNumState();
-// }
-
-// class _TeamNumState extends State<TeamNum> {
-//   int selectedTeams = 2;
-//   @override
-//   Widget build(BuildContext context) {
-    
-//     return AlertDialog(
 //       title: Text("Teams :)"),
 //       content: Row(
 //         children: [

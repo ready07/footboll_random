@@ -1,4 +1,5 @@
 import 'dart:async';
+// import 'dart:ffi';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ class Player {
   @HiveField(1)
   int level;
   @HiveField(2)
-  String position;
+  int position;
   @HiveField(3)
   int randomInt;
 
@@ -57,32 +58,71 @@ class _AllplayersState extends State<Allplayers> {
   playersDataBase db = playersDataBase();
 
   // Dialog for ADDING players
-  void addplayer() {
-    showDialog(
+  Future<void> addplayer(String name, String position, String level, bool edit,
+      bool readyAbsent) async {
+    _controller.text = name;
+    int indexReady =
+        db.listOfReady.indexWhere((player) => player.name == _controller.text);
+    int indexAbsent = db.listOfAbsent
+        .indexWhere((player2) => player2.name == _controller.text);
+    await showDialog(
         context: context,
         builder: (context) {
           return Dialogask(
             controller: _controller,
+            positionStr: position,
+            levelStr: level,
+            edit: edit,
             onLevelSelected: (position1, level2) {
               int levelInt = 0;
+              int positionInt = 0;
               if (level2 == 'Skilled') {
                 levelInt = 3;
               } else if (level2 == 'Mid') {
                 levelInt = 2;
-              } else {
+              } else if (level2 == 'Beginner') {
                 levelInt = 1;
               }
-              setState(() {
-                Player p = Player(_controller.text, levelInt, position1, 0);
-                // List<dynamic> playerAdd = [_controller.text, level2, position1];
-                db.listOfReady
-                    .add(Player(_controller.text, levelInt, position1, 0));
-                db.updateData2();
-              });
-              _controller.clear();
+              if (position1 == 'Atacker') {
+                positionInt = 3;
+              } else if (position1 == 'Defender') {
+                positionInt = 2;
+              } else if (position1 == 'Goalkeeper') {
+                positionInt = 1;
+              }
+              if (edit) {
+                //if editing is true (not adding a new player)
+                position1 = position;
+                level2 = level;
+                if (readyAbsent) {
+                  //if editing a player from ListofReady
+
+                  db.listOfReady[indexReady].name = _controller.text;
+                  db.listOfReady[indexReady].position = positionInt;
+                  db.listOfReady[indexReady].level = levelInt;
+                } else {
+                  //if editing a player from ListOfAbsent
+
+                  db.listOfAbsent[indexAbsent].name = _controller.text;
+                  db.listOfAbsent[indexAbsent].position = positionInt;
+                  db.listOfAbsent[indexAbsent].level = levelInt;
+                }
+              } else {
+                  db.listOfReady
+                      .add(Player(_controller.text, levelInt, positionInt, 0));
+                
+                
+                _controller.clear();
+              }
             },
           );
         });
+
+    setState(() {
+      db.updateData();
+      db.updateData2();
+      db.updateData2();
+    });
   }
 
   // DELETE PLAYERS FROM listOfAbsent
@@ -100,10 +140,6 @@ class _AllplayersState extends State<Allplayers> {
     });
     db.updateData2();
   }
-
-  //   List<Player> playersTOAdd = [
-  //   Player(_controller.text, level2, position1)
-  // ];
 
   // from ABSENT TO READY
   void moveData1(int index) {
@@ -129,9 +165,33 @@ class _AllplayersState extends State<Allplayers> {
     db.updateData2();
   }
 
+  bool shouldSwap(List<Player> players, int i, int j) {
+    Player x = players[i];
+    Player y = players[j];
+    if (x.level < y.level) return true;
+    if (x.level > y.level) return false;
+    if (x.position == y.position) return x.randomInt < y.randomInt;
+
+    if (x.level % 2 == 1) {
+      if (x.position < y.position) return true;
+      if (x.position > y.position) return false;
+    } else {
+      return x.position > y.position;
+    }
+
+    return false;
+  }
+
+  void swapPlayers(List<Player> players, int i, int j) {
+    Player x;
+    x = players[i];
+    players[i] = players[j];
+    players[j] = x;
+  }
+
 //Distributing Players
   List distributePlayers(List<Player> players, int numberOfTeams) {
-    List teams = List.generate(numberOfTeams, (_) => []);
+    List<List<Player>> teams = List.generate(numberOfTeams, (_) => []);
 
 //    for adding RANDOM NUM TO THE LIST
     int randomNum = 0;
@@ -142,188 +202,20 @@ class _AllplayersState extends State<Allplayers> {
     int range = players.length;
     //SORT THE LIST
     for (int i = 0; i < range; i++) {
-      int j = i + 1;
-      for (j; j <= players.length;) {
-        int playerJ = players[j].randomInt;
-        int playerI = players[i].randomInt;
-        if (playerI > playerJ) {
-          Player previousPlayer = players[i];
-          players[i] = players[j];
-          players[j] = previousPlayer;
-        }
+      //SORT LIST BEFORE DISTRIBUTION
+      for (int j = i + 1; j < players.length; j++) {
+        if (shouldSwap(players, i, j)) swapPlayers(players, i, j);
       }
     }
 
-    for (int y = 0; y < players.length; y++) {
-      int x = y + 1;
-      for (x; x <= players.length;) {
-        if (players[y].level > players[x].level) {
-          Player previous = players[y];
-          players[y] = players[x];
-          players[x] = previous;
-        }
-      }
-    }
-    // players.shuffle();
-    // Categorize players by skill level
-    // List<Player> skilled = [];
-    // List<Player> mid = [];
-    // List<Player> beginner = [];
-
-    // RANDOM NUMS ADDED TO PLAYERS
-
-    // for (int i = 0; i <= players.length;) {
-    //   int j = i + 1;
-    //   for (j; j <= players.length;) {
-    //     dynamic playerJ = players[j][3];
-    //     dynamic playerI = players[i][3];
-    //     if (playerI > playerJ) {
-    //       List previousPlayer = players[i];
-    //       players[i] = players[j];
-    //       players[j] = previousPlayer;
-    //     }
-    //   }
-    // }
-
-    // for i in range(len(all)):
-    // j = i + 1
-    // for j in range(j,len(all)):
-    //     if int(all[i][1]) > int(all[j][1]):
-    //         previousPerson = all[i]
-    //         all[i] = all[j]
-    //         all[j] = previousPerson
-    //FOR GOALKEEPERS
-    // for (dynamic player in players) {
-    //   randomNum = Random().nextInt(100);
-    //   if (player[1] == 'Skilled' && player[2] == 'Atacker') {
-    //     player.add(randomNum);
-    //     skilled.add(player);
-    //   } else if (player[1] == 'Mid' && player[2] == 'Goalkeeper') {
-    //     player.add(randomNum);
-    //     mid.add(player);
-    //   } else if (player[1] == 'Beginner' && player[2] == 'Goalkeeper') {
-    //     player.add(randomNum);
-    //     beginner.add(player);
-    //   }
-    // }
-    //FOR ATACKERS
-    // for (var player in players) {
-    //   randomNum = Random().nextInt(100);
-    //   if (player[1] == 'Skilled' && player[2] == 'Goalkeeper') {
-    //     player.add(randomNum);
-    //     skilled.add(player);
-    //   } else if (player[1] == 'Mid' && player[2] == 'Atacker') {
-    //     player.add(randomNum);
-    //     mid.add(player);
-    //   } else if (player[1] == 'Beginner' && player[2] == 'Atacker') {
-    //     player.add(randomNum);
-    //     beginner.add(player);
-    //   }
-    // }
-    //FOR DefenderS
-    // int DefenderTracker1 = 0;
-    // int DefenderTracker2 = 0;
-    // int DefenderTracker3 = 0;
-    // for (var player in players) {
-    //   randomNum = Random().nextInt(100);
-    //   if (player[1] == 'Skilled' && player[2] == 'Defender') {
-    //     player.add(randomNum);
-    //     skilled.add(player);
-    //     DefenderTracker1++;
-    //   } else if (player[1] == 'Mid' && player[2] == 'Defender') {
-    //     player.add(randomNum);
-    //     mid.add(player);
-    //     DefenderTracker2++;
-    //   } else if (player[1] == 'Beginner' && player[2] == 'Defender') {
-    //     player.add(randomNum);
-    //     beginner.add(player);
-    //     DefenderTracker3++;
-    //   }
-    // }
     int playerex = 0;
-    // bool goalKeeperFoundTeam1 = false;
-    // bool gKeeperFoundTeam2 = false;
-    // bool gKeeperFoundTeam3 = false;
-    // int minusLogic1 = 1;
-    // int Defender = 0;
 
-    //for sorting Players in Skilled
-    // for (int i = 0; i <= skilled.length;) {
-    //   int j = i + 1;
-    //   for (j; j <= skilled.length;) {
-    //     if (skilled[j][3] > skilled[j][3]) {
-    //       List previousPlayer = skilled[i];
-    //       skilled[i] = skilled[j];
-    //       skilled[j] = previousPlayer;
-    //     }
-    //   }
-    // }
-
-    // Function to distribute players
-    void distribute(List players, List teams) {
+    void distribute(List<Player> players, List<List<Player>> teams) {
       for (Player player in players) {
         teams[playerex].add(player);
         playerex = (playerex + 1) % numberOfTeams;
       }
-
-      // for (var player in players) {
-      //   //LOGIC FOR ECH LEVELS ,FOR Defender DATA
-      //   if (player == players[0] && player[1] == 'Skilled') {
-      //     Defender = DefenderTracker1;
-      //     minusLogic1 = 1;
-      //   } else if (player == players[0] && player[1] == 'Mid') {
-      //     Defender = DefenderTracker2;
-      //     minusLogic1 = 1;
-      //   } else if (player == players[0] && player[1] == 'Beginner') {
-      //     Defender = DefenderTracker3;
-      //     minusLogic1 = 1;
-      //   }
-
-      //   // NO GOALKEEPER IN THE TEAM
-      //   if (playerex == 0 &&
-      //       player[2] == 'Goalkeeper' &&
-      //       goalKeeperFoundTeam1 == false) {
-      //     goalKeeperFoundTeam1 = true;
-      //     teams[playerex].add(player);
-      //   } else if (playerex == 1 &&
-      //       player[2] == 'Goalkeeper' &&
-      //       gKeeperFoundTeam2 == false) {
-      //     gKeeperFoundTeam2 = true;
-      //     teams[playerex].add(player);
-      //   } else if (playerex == 2 &&
-      //       player[2] == 'Goalkeeper' &&
-      //       gKeeperFoundTeam3 == false) {
-      //     gKeeperFoundTeam3 = true;
-      //     teams[playerex].add(player);
-      //   }
-      //   // //IF GOAL KEEPER ALREADY EXISTS
-      //   else if (player[2] == 'Goalkeeper' &&
-      //       player != players[players.length - minusLogic1] &&
-      //       Defender != 0 &&
-      //       (goalKeeperFoundTeam1 == true && playerex == 0 ||
-      //           gKeeperFoundTeam2 == true && playerex == 1 ||
-      //           gKeeperFoundTeam3 == true && playerex == 2)) {
-      //     dynamic previousPlayer = player;
-      //     player = players[players.length - minusLogic1];
-      //     players[players.length - minusLogic1] = previousPlayer;
-      //     teams[playerex].add(player);
-      //     minusLogic1++;
-      //     Defender--;
-      //   }
-      //   //HAVE NO CHOICE BUT TO ADD THE PLAYER
-      //   else {
-      //     teams[playerex].add(player);
-      //   }
-      //   playerex = (playerex + 1) % numberOfTeams;
-
-      //   // indexPlayer++;
-      // }
     }
-
-    // Distribute skilled, mid, and beginner players
-    // distribute(skilled, teams);
-    // distribute(mid, teams);
-    // distribute(beginner, teams);
 
     distribute(players, teams);
     return teams;
@@ -349,7 +241,7 @@ class _AllplayersState extends State<Allplayers> {
 
     _showCustomLoadingDialog(completer); // Show the loading dialog
 
-    Future.delayed(const Duration(seconds: 5), () {
+    Future.delayed(const Duration(seconds: 2), () {
       if (!completer.isCompleted) {
         completer.complete(); // Complete the future when loading is done
       }
@@ -397,8 +289,7 @@ class _AllplayersState extends State<Allplayers> {
   }
 
   void _navigateToTeamsPage(int selectedTeams) {
-    List<Player> players =
-        db.listOfReady; // Assuming player format [name, level, position]
+    List<Player> players = db.listOfReady;
     List teams = distributePlayers(players, selectedTeams);
 
     Navigator.push(
@@ -451,14 +342,16 @@ class _AllplayersState extends State<Allplayers> {
         ),
         body: TabBarView(
           children: [
-            // List view where player data is displayed
+            // List view where player data is displayed FROM LIST OF READY
             ListView.builder(
               itemCount: db.listOfReady.length,
 
               // ignore: body_might_complete_normally_nullable
               itemBuilder: (context, index) {
                 String levelString = '';
+                String positionString = '';
                 if (db.listOfReady.isNotEmpty) {
+                  //LEVELS FROM INT TO STRINGS
                   if (db.listOfReady[index].level == 3) {
                     levelString = 'Skilled';
                   } else if (db.listOfReady[index].level == 2) {
@@ -466,27 +359,43 @@ class _AllplayersState extends State<Allplayers> {
                   } else if (db.listOfReady[index].level == 1) {
                     levelString = 'Beginner';
                   }
+
+                  //POSITIONS FROM INT TO STRINGS
+                  if (db.listOfReady[index].position == 3) {
+                    positionString = 'Atacker';
+                  } else if (db.listOfReady[index].position == 2) {
+                    positionString = 'Defender';
+                  } else if (db.listOfReady[index].position == 1) {
+                    positionString = 'Goalkeeper';
+                  }
                 }
+
                 if (db.listOfReady.isNotEmpty) {
+                  bool ready = true;
                   return Newplayer(
                     playername: db.listOfReady[index].name,
                     playerlevel: levelString,
-                    playerrole: db.listOfReady[index].position,
+                    playerrole: positionString,
                     deletePlayer: () => removePlayerData2(index),
                     moveToReady: () => moveData2(index),
-                    editPLayerData: () => addplayer(),
+                    editPLayerData: () => addplayer(db.listOfReady[index].name,
+                        positionString, levelString, true, true),
+                    readyAbsent: ready,
                   );
                 }
               },
             ),
 
+            //LIST BUILDER WHERE THE DATA IS DISPLAYED FROM LIST OF ABSENT
             ListView.builder(
               itemCount: db.listOfAbsent.length,
 
               // ignore: body_might_complete_normally_nullable
               itemBuilder: (context, index) {
                 String levelskilled = 'Skilled';
+                String positionString2 = '';
                 if (db.listOfAbsent.isNotEmpty) {
+                  //LEVELS FROM INT TO STRINGS
                   if (db.listOfAbsent[index].level == 3) {
                     levelskilled = 'Skilled';
                   } else if (db.listOfAbsent[index].level == 2) {
@@ -494,15 +403,28 @@ class _AllplayersState extends State<Allplayers> {
                   } else if (db.listOfAbsent[index].level == 1) {
                     levelskilled = 'Beginner';
                   }
+
+                  // POSITIONS FROM INT TO STRINGS
+                  if (db.listOfAbsent[index].position == 3) {
+                    positionString2 = 'Atacker';
+                  } else if (db.listOfAbsent[index].position == 2) {
+                    positionString2 = 'Defender';
+                  } else if (db.listOfAbsent[index].position == 1) {
+                    positionString2 = 'Goalkeeper';
+                  }
                 }
+
                 if (db.listOfAbsent.isNotEmpty) {
+                  bool ready = false;
                   return Newplayer(
                     playername: db.listOfAbsent[index].name,
                     playerlevel: levelskilled,
-                    playerrole: db.listOfAbsent[index].position,
+                    playerrole: positionString2,
                     deletePlayer: () => removePlayerData(index),
                     moveToReady: () => moveData1(index),
-                    editPLayerData: () => addplayer(),
+                    editPLayerData: () => addplayer(db.listOfAbsent[index].name,
+                        positionString2, levelskilled, true, false),
+                    readyAbsent: ready,
                   );
                 }
               },
@@ -552,7 +474,7 @@ class _AllplayersState extends State<Allplayers> {
                   )),
               // const SizedBox(width: 56),
               FloatingActionButton.extended(
-                  onPressed: addplayer,
+                  onPressed: () => addplayer('', '', '', false, false),
                   elevation: 0,
                   label: const Icon(Icons.person_add))
             ],
@@ -562,23 +484,3 @@ class _AllplayersState extends State<Allplayers> {
     );
   }
 }
-
-
-
-
-
-
-// void _navigateToTeamsPage(int selectedTeams) {
-//   List players = db.listOfReady; // Assuming player format [name, level, position]
-//   List<List<List<String>>> teams = distributePlayers(players, selectedTeams);
-
-//   Navigator.pushReplacement(
-//     context,
-//     MaterialPageRoute(
-//       builder: (context) => TeamsPage(
-//         numberOfTeams: selectedTeams,
-//         teams: teams,
-//       ),
-//     ),
-//   );
-// }

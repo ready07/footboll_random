@@ -4,11 +4,16 @@ import 'package:flutter/material.dart';
 class Dialogask extends StatefulWidget {
   final controller;
   final Function(String, String) onLevelSelected;
-  const Dialogask({
-    super.key,
-    required this.controller,
-    required this.onLevelSelected,
-  });
+  String positionStr;
+  String levelStr;
+  bool edit;
+  Dialogask(
+      {super.key,
+      required this.controller,
+      required this.onLevelSelected,
+      required this.positionStr,
+      required this.levelStr,
+      required this.edit});
 
   @override
   State<Dialogask> createState() => _DialogaskState();
@@ -21,6 +26,16 @@ class _DialogaskState extends State<Dialogask> {
 
   String? value1;
   String? value2;
+
+  @override
+  void initState() {
+    
+    super.initState();
+    if (widget.edit == true) {
+      value1 = widget.positionStr;
+      value2 = widget.levelStr;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,13 +91,6 @@ class _DialogaskState extends State<Dialogask> {
                     ),
                     onChanged: (String? newValue2) {
                       setState(() {
-                        // if (newValue2! == 'Skilled') {
-                        //   value2 = 3;
-                        // } else if (newValue2 == "Mid") {
-                        //   value2 = 2;
-                        // }else if (newValue2 == "Beginner"){
-                        //   value2 = 1;
-                        // }
                         value2 = newValue2!;
                       });
                     },
@@ -116,7 +124,8 @@ class _DialogaskState extends State<Dialogask> {
           onPressed: () {
             if (value1 != null && value2 != null && widget.controller != null) {
               widget.onLevelSelected(
-                  value1!, value2!); // Pass the selected value back
+                  value1!, value2!);
+               // Pass the selected value back
               Navigator.of(context).pop();
             }
           },

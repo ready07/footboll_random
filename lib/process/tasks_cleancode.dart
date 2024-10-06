@@ -5,6 +5,7 @@ class Newplayer extends StatefulWidget {
   final String playername;
   final String playerlevel;
   final String playerrole;
+  final bool readyAbsent;
   Function() deletePlayer;
   Function() moveToReady;
   Function() editPLayerData;
@@ -15,9 +16,9 @@ class Newplayer extends StatefulWidget {
       required this.playerrole,
       required this.deletePlayer,
       required this.moveToReady,
-      required this.editPLayerData});
-  
-  
+      required this.editPLayerData,
+      required this.readyAbsent});
+
   @override
   State<Newplayer> createState() => _NewplayerState();
 }
@@ -31,23 +32,24 @@ class _NewplayerState extends State<Newplayer> {
             removePlayer: widget.deletePlayer,
             moveData: widget.moveToReady,
             titlePlayer: widget.playername,
-            // editPlayer: widget.editPLayerData,
+            deleteOrChangeList: deleteOrMove,
           );
         });
-    // Navigator.of(context).pop();
   }
+
+  bool deleteOrMove = true;
   @override
   Widget build(BuildContext context) {
     return Padding(
         padding: const EdgeInsets.fromLTRB(0, 1, 1, 0),
         child: GestureDetector(
-          onTap: changeOptions,
+          onTap: () {
+            widget.editPLayerData();
+          },
           child: Container(
             padding: const EdgeInsets.all(8),
             decoration: const BoxDecoration(
               color: Color.fromARGB(255, 37, 45, 58),
-              // Color(0xFF262626)
-              // borderRadius: BorderRadius.circular(8),
             ),
 
             // Player data UI settings
@@ -55,49 +57,79 @@ class _NewplayerState extends State<Newplayer> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-                  Text('${widget.playername} | ',
-                      style: const TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.w500
-                          )),
-                  // ignore: unrelated_type_equality_checks
-                  Text( 
-                    '${widget.playerlevel}  ',
-                    style: const TextStyle(
-                      color: Color.fromARGB(255, 255, 248, 248),
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.w500
-                    ),
-                  ),
-
-                  // ICON FOR REMOVING PLAYERS
-
-                  // GestureDetector(
-                  //   onTap: widget.deletePlayer,
-                  //   child: const Icon(
-                  //     size: 28,
-                  //     Icons.delete_forever_rounded,
-                  //     color: Color.fromARGB(255, 159, 17, 7),
-                  //   ),
-                  // ),
-
-                  // ICON for moving players
-
-                  // GestureDetector(
-                  //   onTap: moveToReady,
-                  //   child: const Icon(size: 25, Icons.arrow_right_alt_outlined),
-                  // ),
-                ]),
-                Text(
-                  'Position: ${widget.playerrole}',
-                  style: const TextStyle(
-                    color: Color.fromARGB(255, 219, 216, 216),
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text('${widget.playername} | ',
+                                  style: const TextStyle(
+                                      color: Color.fromARGB(255, 255, 255, 255),
+                                      fontSize: 20.0,
+                                      fontWeight: FontWeight.w500)),
+                              Text(
+                                '${widget.playerlevel}  ',
+                                style: const TextStyle(
+                                    color: Color.fromARGB(255, 255, 248, 248),
+                                    fontSize: 20.0,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            'Position: ${widget.playerrole}',
+                            style: const TextStyle(
+                              color: Color.fromARGB(255, 219, 216, 216),
+                              fontSize: 14.0,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                              onPressed: () {
+                                deleteOrMove = false;
+                                changeOptions();
+                              },
+                              icon: const Icon(
+                                Icons.delete_forever,
+                                color: Colors.red,
+                                size: 30,
+                              )),
+                          // GestureDetector(
+                          //   onTap: widget.deletePlayer,
+                          //   child: const Icon(
+                          //     Icons.delete_forever,
+                          //     color: Colors.red,
+                          //     size: 30,
+                          //   ),
+                          // ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          IconButton(
+                              onPressed: () {
+                                deleteOrMove = true;
+                                changeOptions();
+                              },
+                              icon: Icon(
+                                widget.readyAbsent
+                                    ? Icons.arrow_forward_rounded
+                                    : Icons.arrow_back,
+                                size: 30,
+                                color: Colors.amberAccent,
+                              )),
+                          const SizedBox(
+                            width: 10,
+                          )
+                        ],
+                      ),
+                    ]),
               ],
             ),
           ),
