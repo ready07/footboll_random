@@ -314,7 +314,7 @@ class _AllplayersState extends State<Allplayers> {
       child: Scaffold(
         backgroundColor: const Color.fromARGB(255, 15, 20, 27),
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(80.0),
+          preferredSize: const Size.fromHeight(80.0),
           child: AppBar(
             backgroundColor: const Color.fromARGB(190, 33, 40, 51),
             title: const Text(

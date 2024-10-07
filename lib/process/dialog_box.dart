@@ -27,6 +27,8 @@ class _DialogaskState extends State<Dialogask> {
   String? value1;
   String? value2;
 
+  String saveType = 'Save';
+
   @override
   void initState() {
     super.initState();
@@ -121,14 +123,19 @@ class _DialogaskState extends State<Dialogask> {
           style: ElevatedButton.styleFrom(
               backgroundColor: const Color.fromARGB(255, 49, 55, 87)),
           onPressed: () {
-            if (value1 != null && value2 != null && widget.controller.text.isNotEmpty) {
+            if (value1 != null &&
+                value2 != null &&
+                widget.controller.text.isNotEmpty) {
               widget.onLevelSelected(value1!, value2!);
               // Pass the selected value back
               Navigator.of(context).pop();
             }
           },
-          child: const Text(
+          child: widget.edit == false? const Text(
             'Save',
+            style: TextStyle(color: Colors.white),
+          ): const Text(
+            'Edit',
             style: TextStyle(color: Colors.white),
           ),
         ),

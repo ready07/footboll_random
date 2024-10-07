@@ -98,19 +98,11 @@ class _NewplayerState extends State<Newplayer> {
                               },
                               icon: const Icon(
                                 Icons.delete_forever,
-                                color: Colors.red,
+                                color: Color.fromARGB(255, 188, 39, 39),
                                 size: 30,
                               )),
-                          // GestureDetector(
-                          //   onTap: widget.deletePlayer,
-                          //   child: const Icon(
-                          //     Icons.delete_forever,
-                          //     color: Colors.red,
-                          //     size: 30,
-                          //   ),
-                          // ),
                           const SizedBox(
-                            width: 10,
+                            width: 5,
                           ),
                           IconButton(
                               onPressed: () {
@@ -122,7 +114,7 @@ class _NewplayerState extends State<Newplayer> {
                                     ? Icons.arrow_forward_rounded
                                     : Icons.arrow_back,
                                 size: 30,
-                                color: Colors.amberAccent,
+                                color: const Color.fromARGB(255, 229, 216, 216),
                               )),
                           const SizedBox(
                             width: 10,
