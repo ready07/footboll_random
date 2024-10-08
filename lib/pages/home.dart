@@ -73,6 +73,9 @@ class _AllplayersState extends State<Allplayers> {
             positionStr: position,
             levelStr: level,
             edit: edit,
+            listReadyAbsent: readyAbsent,
+            listOfReady: db.listOfReady,
+            listOfAbsent: db.listOfAbsent,
             onLevelSelected: (position1, level2) {
               int levelInt = 0;
               int positionInt = 0;
@@ -108,10 +111,9 @@ class _AllplayersState extends State<Allplayers> {
                   db.listOfAbsent[indexAbsent].level = levelInt;
                 }
               } else {
-                  db.listOfReady
-                      .add(Player(_controller.text, levelInt, positionInt, 0));
-                
-                
+                db.listOfReady
+                    .add(Player(_controller.text, levelInt, positionInt, 0));
+
                 _controller.clear();
               }
             },
@@ -238,7 +240,6 @@ class _AllplayersState extends State<Allplayers> {
 // Using Completer to manage async completion
   void _showLoadingScreen(int selectedTeams) {
     Completer<void> completer = Completer<void>();
-
     _showCustomLoadingDialog(completer); // Show the loading dialog
 
     Future.delayed(const Duration(seconds: 2), () {
@@ -474,7 +475,7 @@ class _AllplayersState extends State<Allplayers> {
                   )),
               // const SizedBox(width: 56),
               FloatingActionButton.extended(
-                  onPressed: () => addplayer('', '', '', false, false),
+                  onPressed: () => addplayer('', '', '', false, true),
                   elevation: 0,
                   label: const Icon(Icons.person_add))
             ],

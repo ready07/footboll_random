@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:football_app/pages/home.dart';
 // import 'package:football_app/pages/home.dart';
 
 class Dialogask extends StatefulWidget {
@@ -7,13 +8,19 @@ class Dialogask extends StatefulWidget {
   String positionStr;
   String levelStr;
   bool edit;
+  bool listReadyAbsent;
+  final List<Player> listOfReady;
+  final List<Player> listOfAbsent;
   Dialogask(
       {super.key,
       required this.controller,
       required this.onLevelSelected,
       required this.positionStr,
       required this.levelStr,
-      required this.edit});
+      required this.edit,
+      required this.listReadyAbsent,
+      required this.listOfReady,
+      required this.listOfAbsent});
 
   @override
   State<Dialogask> createState() => _DialogaskState();
@@ -26,7 +33,6 @@ class _DialogaskState extends State<Dialogask> {
 
   String? value1;
   String? value2;
-
   String saveType = 'Save';
 
   @override
@@ -37,6 +43,31 @@ class _DialogaskState extends State<Dialogask> {
       value2 = widget.levelStr;
     }
   }
+
+  bool nameExist(String inputName) {
+    bool exist = false;
+    if (widget.listReadyAbsent == true) {
+      for (Player player in widget.listOfReady) {
+        if (player.name.trim() == inputName.trim()) {
+          exist = true;
+        }
+      }
+    } else {
+      for (Player player in widget.listOfAbsent) {
+        if (player.name == inputName) {
+          exist = true;
+        }
+      }
+    }
+    if (exist == true) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  bool errorAccured = false;
+  String errorMessage = '';
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +136,8 @@ class _DialogaskState extends State<Dialogask> {
                       );
                     }).toList()),
               ],
-            )
+            ),
+            errorAccured? Text(errorMessage,style:const TextStyle(color: Colors.red),) :const Text(''),
           ],
         ),
       ),
@@ -125,19 +157,29 @@ class _DialogaskState extends State<Dialogask> {
           onPressed: () {
             if (value1 != null &&
                 value2 != null &&
-                widget.controller.text.isNotEmpty) {
+                widget.controller.text.isNotEmpty &&
+                nameExist(widget.controller.text)) {
               widget.onLevelSelected(value1!, value2!);
-              // Pass the selected value back
               Navigator.of(context).pop();
+            } else {setState(() {
+              errorAccured = true;
+              if (nameExist(widget.controller.text) == false) {
+                errorMessage = 'This player already exists!';
+              } else {
+                errorMessage = 'Enter all the required data!';
+              }
+            });
             }
           },
-          child: widget.edit == false? const Text(
-            'Save',
-            style: TextStyle(color: Colors.white),
-          ): const Text(
-            'Edit',
-            style: TextStyle(color: Colors.white),
-          ),
+          child: widget.edit == false
+              ? const Text(
+                  'Save',
+                  style: TextStyle(color: Colors.white),
+                )
+              : const Text(
+                  'Edit',
+                  style: TextStyle(color: Colors.white),
+                ),
         ),
       ],
     );
