@@ -58,13 +58,13 @@ class _AllplayersState extends State<Allplayers> {
   playersDataBase db = playersDataBase();
 
   // Dialog for ADDING players
-  Future<void> addplayer(String name, String position, String level, bool edit,
+  Future<void> addplayer(String pName, String position, String level, bool edit,
       bool readyAbsent) async {
-    _controller.text = name;
-    int indexReady =
-        db.listOfReady.indexWhere((player) => player.name == _controller.text);
-    int indexAbsent = db.listOfAbsent
-        .indexWhere((player2) => player2.name == _controller.text);
+    _controller.text = pName;
+    // int indexReady =
+    //     db.listOfReady.indexWhere((player) => player.name == _controller.text);
+    // int indexAbsent = db.listOfAbsent
+    //     .indexWhere((player2) => player2.name == _controller.text);
     await showDialog(
         context: context,
         builder: (context) {
@@ -72,55 +72,40 @@ class _AllplayersState extends State<Allplayers> {
             controller: _controller,
             positionStr: position,
             levelStr: level,
+            name: pName,
             edit: edit,
             listReadyAbsent: readyAbsent,
             listOfReady: db.listOfReady,
             listOfAbsent: db.listOfAbsent,
+            db: db,
             onLevelSelected: (position1, level2) {
-              int levelInt = 0;
-              int positionInt = 0;
-              if (level2 == 'Skilled') {
-                levelInt = 3;
-              } else if (level2 == 'Mid') {
-                levelInt = 2;
-              } else if (level2 == 'Beginner') {
-                levelInt = 1;
-              }
-              if (position1 == 'Atacker') {
-                positionInt = 3;
-              } else if (position1 == 'Defender') {
-                positionInt = 2;
-              } else if (position1 == 'Goalkeeper') {
-                positionInt = 1;
-              }
-              if (edit) {
-                //if editing is true (not adding a new player)
-                position1 = position;
-                level2 = level;
-                if (readyAbsent) {
-                  //if editing a player from ListofReady
-
-                  db.listOfReady[indexReady].name = _controller.text;
-                  db.listOfReady[indexReady].position = positionInt;
-                  db.listOfReady[indexReady].level = levelInt;
-                } else {
-                  //if editing a player from ListOfAbsent
-
-                  db.listOfAbsent[indexAbsent].name = _controller.text;
-                  db.listOfAbsent[indexAbsent].position = positionInt;
-                  db.listOfAbsent[indexAbsent].level = levelInt;
-                }
-              } else {
-                db.listOfReady
-                    .add(Player(_controller.text, levelInt, positionInt, 0));
-
-                _controller.clear();
-              }
             },
           );
         });
 
     setState(() {
+      // sorting the Players After a player has been added or edited for ListReady
+      db.listOfReady
+          .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      for (int i = 0; i < db.listOfReady.length; i++) {
+        for (int j = i + 1; j < db.listOfReady.length; j++) {
+          if (shouldSwap(db.listOfReady, i, j, true)) {
+            swapPlayers(db.listOfReady, i, j);
+          }
+        }
+      }
+
+      // sorting the Players After a player has been added or edited for ListAbsent
+      db.listOfAbsent
+          .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      for (int i = 0; i < db.listOfAbsent.length; i++) {
+        for (int j = i + 1; j < db.listOfAbsent.length; j++) {
+          if (shouldSwap(db.listOfAbsent, i, j, true)) {
+            swapPlayers(db.listOfAbsent, i, j);
+          }
+        }
+      }
+
       db.updateData();
       db.updateData2();
       db.updateData2();
@@ -167,14 +152,18 @@ class _AllplayersState extends State<Allplayers> {
     db.updateData2();
   }
 
-  bool shouldSwap(List<Player> players, int i, int j) {
+  bool shouldSwap(List<Player> players, int i, int j, bool homeOrTeams) {
     Player x = players[i];
     Player y = players[j];
     if (x.level < y.level) return true;
     if (x.level > y.level) return false;
-    if (x.position == y.position) return x.randomInt < y.randomInt;
+    if (x.position < y.position && homeOrTeams) return true;
+    if (x.position > y.position && homeOrTeams) return false;
+    if (x.position == y.position && homeOrTeams == false) {
+      return x.randomInt < y.randomInt;
+    }
 
-    if (x.level % 2 == 1) {
+    if (x.level % 2 == 1 && homeOrTeams == false) {
       if (x.position < y.position) return true;
       if (x.position > y.position) return false;
     } else {
@@ -206,7 +195,7 @@ class _AllplayersState extends State<Allplayers> {
     for (int i = 0; i < range; i++) {
       //SORT LIST BEFORE DISTRIBUTION
       for (int j = i + 1; j < players.length; j++) {
-        if (shouldSwap(players, i, j)) swapPlayers(players, i, j);
+        if (shouldSwap(players, i, j, false)) swapPlayers(players, i, j);
       }
     }
 

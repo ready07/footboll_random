@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:football_app/pages/home.dart';
+import 'package:football_app/process/hive_playersdata.dart';
 // import 'package:football_app/pages/home.dart';
 
 class Dialogask extends StatefulWidget {
@@ -11,6 +12,8 @@ class Dialogask extends StatefulWidget {
   bool listReadyAbsent;
   final List<Player> listOfReady;
   final List<Player> listOfAbsent;
+  playersDataBase db;
+  String name;
   Dialogask(
       {super.key,
       required this.controller,
@@ -20,7 +23,10 @@ class Dialogask extends StatefulWidget {
       required this.edit,
       required this.listReadyAbsent,
       required this.listOfReady,
-      required this.listOfAbsent});
+      required this.listOfAbsent,
+      required this.db,
+      required this.name
+      });
 
   @override
   State<Dialogask> createState() => _DialogaskState();
@@ -46,23 +52,73 @@ class _DialogaskState extends State<Dialogask> {
 
   bool nameExist(String inputName) {
     bool exist = false;
-    if (widget.listReadyAbsent == true) {
+    if ((widget.edit == false) || (widget.edit && inputName != widget.name)) {
       for (Player player in widget.listOfReady) {
         if (player.name.trim() == inputName.trim()) {
           exist = true;
         }
       }
-    } else {
       for (Player player in widget.listOfAbsent) {
         if (player.name == inputName) {
           exist = true;
         }
       }
-    }
+    } 
+    
     if (exist == true) {
       return false;
     } else {
       return true;
+    }
+  }
+
+  void addOrEdit(
+    name,
+    position,
+    level,
+  ) {
+    int indexReady = widget.db.listOfReady
+        .indexWhere((player) => player.name == widget.name);
+    int indexAbsent = widget.db.listOfAbsent
+        .indexWhere((player2) => player2.name == widget.name);
+
+    int levelInt = 0;
+    int positionInt = 0;
+    if (level == 'Skilled') {
+      levelInt = 3;
+    } else if (level == 'Mid') {
+      levelInt = 2;
+    } else if (level == 'Beginner') {
+      levelInt = 1;
+    }
+    if (position == 'Atacker') {
+      positionInt = 3;
+    } else if (position == 'Defender') {
+      positionInt = 2;
+    } else if (position == 'Goalkeeper') {
+      positionInt = 1;
+    }
+    if (widget.edit) {
+      //if editing is true (not adding a new player)
+      position = position;
+      level = level;
+      if (widget.listReadyAbsent) {
+        //if editing a player from ListofReady
+
+        widget.db.listOfReady[indexReady].name = widget.controller.text;
+        widget.db.listOfReady[indexReady].position = positionInt;
+        widget.db.listOfReady[indexReady].level = levelInt;
+      } else {
+        //if editing a player from ListOfAbsent
+        widget.db.listOfAbsent[indexAbsent].name = widget.controller.text;
+        widget.db.listOfAbsent[indexAbsent].position = positionInt;
+        widget.db.listOfAbsent[indexAbsent].level = levelInt;
+      }
+    } else {
+      widget.db.listOfReady
+          .add(Player(widget.controller.text, levelInt, positionInt, 0));
+
+      widget.controller.clear();
     }
   }
 
@@ -137,7 +193,12 @@ class _DialogaskState extends State<Dialogask> {
                     }).toList()),
               ],
             ),
-            errorAccured? Text(errorMessage,style:const TextStyle(color: Colors.red),) :const Text(''),
+            errorAccured
+                ? Text(
+                    errorMessage,
+                    style: const TextStyle(color: Colors.red),
+                  )
+                : const Text(''),
           ],
         ),
       ),
@@ -160,15 +221,22 @@ class _DialogaskState extends State<Dialogask> {
                 widget.controller.text.isNotEmpty &&
                 nameExist(widget.controller.text)) {
               widget.onLevelSelected(value1!, value2!);
+              addOrEdit(
+                widget.controller.text,
+                value1,
+                value2,
+              );
+
               Navigator.of(context).pop();
-            } else {setState(() {
-              errorAccured = true;
-              if (nameExist(widget.controller.text) == false) {
-                errorMessage = 'This player already exists!';
-              } else {
-                errorMessage = 'Enter all the required data!';
-              }
-            });
+            } else {
+              setState(() {
+                errorAccured = true;
+                if (nameExist(widget.controller.text) == false) {
+                  errorMessage = 'This player already exists!';
+                } else {
+                  errorMessage = 'Enter all the required data!';
+                }
+              });
             }
           },
           child: widget.edit == false
