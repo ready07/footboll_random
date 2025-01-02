@@ -78,38 +78,51 @@ class _AllplayersState extends State<Allplayers> {
             listOfReady: db.listOfReady,
             listOfAbsent: db.listOfAbsent,
             db: db,
-            onLevelSelected: (position1, level2) {
-            },
+            onLevelSelected: (position1, level2) {},
           );
         });
 
     setState(() {
       // sorting the Players After a player has been added or edited for ListReady
-      db.listOfReady
-          .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-      for (int i = 0; i < db.listOfReady.length; i++) {
-        for (int j = i + 1; j < db.listOfReady.length; j++) {
-          if (shouldSwap(db.listOfReady, i, j, true)) {
-            swapPlayers(db.listOfReady, i, j);
-          }
-        }
-      }
+      sortUi(db.listOfReady);
+      // db.listOfReady
+      //     .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      // for (int i = 0; i < db.listOfReady.length; i++) {
+      //   for (int j = i + 1; j < db.listOfReady.length; j++) {
+      //     if (shouldSwap(db.listOfReady, i, j, true)) {
+      //       swapPlayers(db.listOfReady, i, j);
+      //     }
+      //   }
+      // }
 
       // sorting the Players After a player has been added or edited for ListAbsent
-      db.listOfAbsent
-          .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-      for (int i = 0; i < db.listOfAbsent.length; i++) {
-        for (int j = i + 1; j < db.listOfAbsent.length; j++) {
-          if (shouldSwap(db.listOfAbsent, i, j, true)) {
-            swapPlayers(db.listOfAbsent, i, j);
-          }
-        }
-      }
+      sortUi(db.listOfAbsent);
+      // db.listOfAbsent
+      //     .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      // for (int i = 0; i < db.listOfAbsent.length; i++) {
+      //   for (int j = i + 1; j < db.listOfAbsent.length; j++) {
+      //     if (shouldSwap(db.listOfAbsent, i, j, true)) {
+      //       swapPlayers(db.listOfAbsent, i, j);
+      //     }
+      //   }
+      // }
 
       db.updateData();
       db.updateData2();
       db.updateData2();
     });
+  }
+ 
+  //for SORTING the UI after a player is added or editted :)
+  void sortUi(List<Player> list) {
+    list.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    for (int i = 0; i < list.length; i++) {
+      for (int j = i + 1; j < list.length; j++) {
+        if (shouldSwap(list, i, j, true)) {
+          swapPlayers(list, i, j);
+        }
+      }
+    }
   }
 
   // DELETE PLAYERS FROM listOfAbsent
@@ -135,6 +148,7 @@ class _AllplayersState extends State<Allplayers> {
         db.listOfAbsent[index],
       );
       db.listOfAbsent.removeAt(index);
+      sortUi(db.listOfReady);
     });
     db.updateData2();
     db.updateData();
@@ -147,6 +161,7 @@ class _AllplayersState extends State<Allplayers> {
         db.listOfReady[index],
       );
       db.listOfReady.removeAt(index);
+      sortUi(db.listOfAbsent);
     });
     db.updateData();
     db.updateData2();
